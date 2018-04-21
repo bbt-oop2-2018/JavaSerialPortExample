@@ -25,21 +25,28 @@ public class SerialLineReceiver implements SerialPortDataListener {
     
     private SerialPortLineListener listener = null;
     
-    public SerialLineReceiver() {
+    public SerialLineReceiver() throws Exception {
         this(0, 9600, false);
     }
     
-    public SerialLineReceiver(int comIndex, int baudrate, boolean enableDebugging) {
+    public SerialLineReceiver(int comIndex, int baudrate, boolean enableDebugging) throws Exception {
         this.enableDebugMessages = enableDebugging;
-        comPort = SerialPort.getCommPorts()[comIndex];
-        if (comPort.openPort()) {
-            if (enableDebugMessages) {
-                System.out.println("Opening port with baudrate of " + baudrate + " baud");
-            }
-            setBaudRate(baudrate);
-            comPort.addDataListener(this);
+        if (SerialPort.getCommPorts().length <= 0) {
+            throw new Exception("No COM ports available. Is your Arduino connected?");
         } else {
-            System.out.println("Could not open port. Is another program using it?");
+            if (comIndex >= SerialPort.getCommPorts().length) {
+                throw new Exception("Incorrect comIndex. No such port with that index.");
+            }
+            comPort = SerialPort.getCommPorts()[comIndex];
+            if (comPort.openPort()) {
+                if (enableDebugMessages) {
+                    System.out.println("Opening port with baudrate of " + baudrate + " baud");
+                }
+                setBaudRate(baudrate);
+                comPort.addDataListener(this);
+            } else {
+                throw new Exception("Could not open port. Is another program using it?");
+            }
         }
     }
     
